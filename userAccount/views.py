@@ -1,7 +1,7 @@
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
-from userAccount.forms import RegistrationForm
+from userAccount.forms import RegistrationForm, UserAuthenticationForm
 
 
 def home(request):
@@ -31,3 +31,23 @@ def logout_view(request):
     logout(request)
     return redirect('home')
 
+
+def login_view(request):
+    context = {}
+    user = request.user
+    if user.is_authenticated:
+        return redirect('/')
+
+    if request.POST:
+        form = UserAuthenticationForm(request.POST)
+        email = request.POST['email']
+        password = request.POST['password']
+        user = authenticate(email=email, password=password)
+
+        if user:
+            login(request, user)
+            return redirect('/')
+    else:
+        form = UserAuthenticationForm()
+    context['login_form'] = form
+    return render(request, 'user_account/login.html', context)
